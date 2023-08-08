@@ -1,0 +1,54 @@
+[buildout]
+parts = switch-softwaretype
+
+# std stuff for slapos instance
+eggs-directory = {{ buildout_egg_directory }}
+develop-eggs-directory = {{ buildout_develop_directory }}
+offline = true
+
+
+[switch-softwaretype]
+recipe = slapos.cookbook:switch-softwaretype
+default  = dynamic-template-flapp:output
+RootSoftwareInstance = ${:default}
+
+[slap-configuration]
+recipe = slapos.cookbook:slapconfiguration.serialised
+computer = ${slap-connection:computer-id}
+partition = ${slap-connection:partition-id}
+url = ${slap-connection:server-url}
+key = ${slap-connection:key-file}
+cert = ${slap-connection:cert-file}
+
+[jinja2-template-base]
+recipe = slapos.recipe.template:jinja2
+output = ${buildout:directory}/${:filename}
+extensions = jinja2.ext.do
+extra-context =
+context =
+  key develop_eggs_directory buildout:develop-eggs-directory
+  key buildout_directory buildout:directory
+  key eggs_directory buildout:eggs-directory
+  key ipv4 slap-configuration:ipv4
+  key ipv6 slap-configuration:ipv6
+  key global_ipv4_prefix network-information:global-ipv4-network
+  key slapparameter_dict slap-configuration:configuration
+  key computer_id slap-configuration:computer
+  raw template_monitor {{ template_monitor_cfg }}
+  raw logrotate_cfg {{ logrotate_cfg }}
+  ${:extra-context}
+
+
+[dynamic-template-flapp-parameters]
+gunicorn = {{ gunicorn_location }}
+redis_bin = {{ redis_bin }}
+redis_cli = {{ redis_cli }}
+postgresql_location = {{ postgresql_location }}
+
+
+[dynamic-template-flapp]
+<= jinja2-template-base
+url = {{ template_flapp }}
+filename = instance-flapp.cfg
+extra-context =
+  section parameter_dict dynamic-template-flapp-parameters
