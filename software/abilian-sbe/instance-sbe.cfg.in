@@ -105,19 +105,21 @@ config-url = ${request-sbe-frontend:connection-secure_access}
 [sbe-parameters]
 pid-file = ${directory:run}/gunicorn.pid
 ipv6 = {{ (ipv6 | list)[0] }}
-port = 8000
+port = 8005
 log-file = ${directory:log}/sbe.log
 
 
 [sbe-wrapper]
 recipe = slapos.cookbook:wrapper
 command-line =
-  {{parameter_dict['gunicorn']}} --workers 2
+  {{parameter_dict['gunicorn']}}
+  extranet.wsgi:app
   -b [${sbe-parameters:ipv6}]:${sbe-parameters:port}
   -p ${sbe-parameters:pid-file}
-  abilian-sbe-next.wsgi:app
+  --workers 2
   --error-logfile ${sbe-parameters:log-file}
-  --timeout 200 --log-level debug
+  --log-level debug
+  --timeout 200
   --preload
 
 environment =
