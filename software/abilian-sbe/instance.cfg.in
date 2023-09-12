@@ -44,6 +44,7 @@ gunicorn = {{ gunicorn_location }}
 redis_bin = {{ redis_bin }}
 redis_cli = {{ redis_cli }}
 postgresql_location = {{ postgresql_location }}
+libreoffice_bin = {{ libreoffice_bin }}
 
 
 [dynamic-template-sbe]
