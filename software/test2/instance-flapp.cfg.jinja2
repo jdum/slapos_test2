@@ -31,7 +31,7 @@ ip = {{ (ipv4 | list)[0] }}
 
 [postgresql]
 recipe = slapos.cookbook:postgres
-bin = {{ parameter_dict['postgresql_location'] }}/bin/
+bin = {{ parameter_dict['postgresql_location'] }}/bin
 services = ${directory:services}
 dbname  = flapp
 superuser = flapp
@@ -42,6 +42,26 @@ ipv4 = ${postgresql-address:ip}
 # disable listening on ipv6
 ipv6 =
 port = ${postgresql-address:port}
+
+promises = ${postgresql-promise:name}
+
+
+[postgresql-promise]
+<= monitor-promise-base
+promise = check_command_execute
+name = promise-postgresql.py
+config-command = ${postgresql-psql:wrapper-path} -c '\q'
+
+
+[postgresql-psql]
+recipe = slapos.cookbook:wrapper
+wrapper-path = ${directory:bin}/${:_buildout_section_name_}
+command-line =
+    ${postgresql:bin}/psql
+        -h ${postgresql:pgdata-directory}
+        -U ${postgresql:superuser}
+        -d ${postgresql:dbname}
+
 
 [postgresql-binary-link]
 recipe = slapos.cookbook:symbolic.link
