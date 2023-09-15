@@ -107,7 +107,7 @@ return = secure_access domain
 [sbe-frontend-promise]
 <= monitor-promise-base
 promise = check_url_available
-name = sbe_frontend.py
+name = sbe-frontend.py
 config-url = ${request-sbe-frontend:connection-secure_access}
 
 
@@ -130,7 +130,6 @@ command-line =
   --log-level debug
   --timeout 10000
 
-
 environment =
   REDIS_SOCKET = ${service-redis:unixsocket}
   FLASK_SECRET_KEY = "sdqlfkjhqldsfjhoiertzoetryi"
@@ -141,11 +140,11 @@ environment =
   FLASK_BROKER_URL = ${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
   FLASK_SITE_NAME = "Some site name"
-  FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
   FLASK_MAIL_SERVER = ""
 
-
 wrapper-path = ${directory:services}/gunicorn_launcher
+#FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
+#FLASK_SERVER_NAME = [${sbe-parameters:ipv6}]:${sbe-parameters:port}
 
 
 [sbe-listen-promise]
