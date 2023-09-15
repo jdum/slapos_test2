@@ -43,6 +43,11 @@ ipv4 = ${postgresql-address:ip}
 ipv6 =
 port = ${postgresql-address:port}
 
+
+[postgres-uri]
+uri = postgres://${postgresql:superuser}:${postgresql:password}@${postgresql:ipv4}:${postgresql:port}/${postgresql:dbname}
+
+
 [postgresql-binary-link]
 recipe = slapos.cookbook:symbolic.link
 target-directory = ${directory:bin}
@@ -67,6 +72,10 @@ server-bin = {{ parameter_dict['redis_bin'] }}
 cli-bin = {{ parameter_dict['redis_cli'] }}
 depend =
     ${logrotate-entry-redis:recipe}
+
+
+[redis-uri]
+uri = unix://${service-redis:unixsocket}?db=0
 
 
 [redis-promise]
@@ -116,14 +125,25 @@ command-line =
   extranet.wsgi:app
   -b [${sbe-parameters:ipv6}]:${sbe-parameters:port}
   -p ${sbe-parameters:pid-file}
-  --workers 2
+  --workers 1
   --error-logfile ${sbe-parameters:log-file}
   --log-level debug
-  --timeout 200
-  --preload
+  --timeout 10000
+
 
 environment =
   REDIS_SOCKET = ${service-redis:unixsocket}
+  FLASK_SECRET_KEY = "sdqlfkjhqldsfjhoiertzoetryi"
+  FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
+  FLASK_DEBUG = 1
+  FLASK_MAIL_DEBUG = 1
+  FLASK_REDIS_URI = ${redis-uri:uri}
+  FLASK_BROKER_URL = ${redis-uri:uri}
+  FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
+  FLASK_SITE_NAME = "Some site name"
+  FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
+  FLASK_MAIL_SERVER = ""
+
 
 wrapper-path = ${directory:services}/gunicorn_launcher
 
