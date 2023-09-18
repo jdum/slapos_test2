@@ -41,6 +41,7 @@ context =
 
 [dynamic-template-sbe-parameters]
 gunicorn = {{ gunicorn_location }}
+flask = {{ flask_location }}
 redis_bin = {{ redis_bin }}
 redis_cli = {{ redis_cli }}
 postgresql_location = {{ postgresql_location }}
