@@ -118,10 +118,57 @@ port = 8005
 log-file = ${directory:log}/sbe.log
 
 
-[sbe-wrapper]
+[sbe-initdb]
 recipe = slapos.cookbook:wrapper
 command-line =
-  {{parameter_dict['flask']}} db initdb &&
+  sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} db initdb"
+
+# Here we DO NOT use the FLASK_SERVER_NAME variable.
+#FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
+#FLASK_SERVER_NAME = [${sbe-parameters:ipv6}]:${sbe-parameters:port}
+environment =
+  FLASK_APP = wsgi.py
+  REDIS_SOCKET = ${service-redis:unixsocket}
+  FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
+  FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
+  FLASK_DEBUG = 1
+  FLASK_MAIL_DEBUG = 1
+  FLASK_REDIS_URI = ${redis-uri:uri}
+  FLASK_BROKER_URL = ${redis-uri:uri}
+  FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
+  FLASK_SITE_NAME = some name
+  FLASK_MAIL_SERVER =
+
+wrapper-path = ${directory:services}/flask_initdb
+
+
+[sbe-admin]
+mail = jd@abilian.com
+passwd = azerty
+
+
+[sbe-create-admin]
+recipe = slapos.cookbook:wrapper
+command-line =
+  sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} createuser --role admin --name admin jd@abilian.com azerty"
+
+environment =
+  FLASK_APP = wsgi.py
+  REDIS_SOCKET = ${service-redis:unixsocket}
+  FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
+  FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
+  FLASK_DEBUG = 1
+  FLASK_MAIL_DEBUG = 1
+  FLASK_REDIS_URI = ${redis-uri:uri}
+  FLASK_BROKER_URL = ${redis-uri:uri}
+  FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
+
+wrapper-path = ${directory:services}/sbe_create_admin
+
+
+[sbe-start-gunicorn]
+recipe = slapos.cookbook:wrapper
+command-line =
   {{parameter_dict['gunicorn']}}
   extranet.wsgi:app
   -b [${sbe-parameters:ipv6}]:${sbe-parameters:port}
@@ -131,23 +178,22 @@ command-line =
   --log-level debug
   --timeout 10000
 
-# Here whe DO NOT use the FLASK_SERVER_NAME variable.
+# Here we DO NOT use the FLASK_SERVER_NAME variable.
 #FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
 #FLASK_SERVER_NAME = [${sbe-parameters:ipv6}]:${sbe-parameters:port}
 environment =
   REDIS_SOCKET = ${service-redis:unixsocket}
-  FLASK_SECRET_KEY = "sdqlfkjhqldsfjhoiertzoetryi"
+  FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
   FLASK_DEBUG = 1
   FLASK_MAIL_DEBUG = 1
   FLASK_REDIS_URI = ${redis-uri:uri}
   FLASK_BROKER_URL = ${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
-  FLASK_SITE_NAME = "Some site name"
-  FLASK_MAIL_SERVER = ""
+  FLASK_SITE_NAME = some name
+  FLASK_MAIL_SERVER =
 
-wrapper-path = ${directory:services}/gunicorn_launcher
-
+wrapper-path = ${directory:services}/sbe_start_gunicorn
 
 
 [sbe-listen-promise]
@@ -177,7 +223,9 @@ parts =
   redis-promise
   logrotate-entry-redis
 
-  sbe-wrapper
+  sbe-initdb
+  sbe-create-admin
+  sbe-start-gunicorn
   sbe-listen-promise
   sbe-frontend-promise
 
