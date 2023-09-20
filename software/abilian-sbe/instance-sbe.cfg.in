@@ -121,13 +121,13 @@ log-file = ${directory:log}/sbe.log
 [sbe-initdb]
 recipe = slapos.cookbook:wrapper
 command-line =
-  sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} db initdb"
+  sh -c "cd {{parameter_dict['sbe_path']}}/src && {{parameter_dict['flask']}} initdb"
 
 # Here we DO NOT use the FLASK_SERVER_NAME variable.
 #FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
 #FLASK_SERVER_NAME = [${sbe-parameters:ipv6}]:${sbe-parameters:port}
 environment =
-  FLASK_APP = wsgi.py
+  FLASK_APP = extranet.wsgi:app
   REDIS_SOCKET = ${service-redis:unixsocket}
   FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
@@ -150,10 +150,10 @@ passwd = azerty
 [sbe-create-admin]
 recipe = slapos.cookbook:wrapper
 command-line =
-  sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} createuser --role admin --name admin jd@abilian.com azerty"
+  sh -c "cd {{parameter_dict['sbe_path']}}/src && {{parameter_dict['flask']}} createuser --role admin --name admin ${sbe-admin:mail} ${sbe-admin:passwd}"
 
 environment =
-  FLASK_APP = wsgi.py
+  FLASK_APP = extranet.wsgi:app
   REDIS_SOCKET = ${service-redis:unixsocket}
   FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
