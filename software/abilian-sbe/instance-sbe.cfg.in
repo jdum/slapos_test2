@@ -118,14 +118,16 @@ port = 8005
 log-file = ${directory:log}/sbe.log
 
 
+[sbe-admin]
+mail = jd@abilian.com
+passwd = azerty
+
+
 [sbe-initdb]
 recipe = slapos.cookbook:wrapper
 command-line =
   sh -c "cd {{parameter_dict['sbe_path']}}/src && {{parameter_dict['flask']}} initdb"
 
-# Here we DO NOT use the FLASK_SERVER_NAME variable.
-#FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
-#FLASK_SERVER_NAME = [${sbe-parameters:ipv6}]:${sbe-parameters:port}
 environment =
   FLASK_APP = extranet.wsgi:app
   REDIS_SOCKET = ${service-redis:unixsocket}
@@ -137,14 +139,10 @@ environment =
   FLASK_BROKER_URL = ${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
   FLASK_SITE_NAME = some name
-  FLASK_MAIL_SERVER =
+  FLASK_MAIL_SERVER = none
+  LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
 
-wrapper-path = ${directory:services}/flask_initdb
-
-
-[sbe-admin]
-mail = jd@abilian.com
-passwd = azerty
+wrapper-path = ${directory:services}/sbe_initdb
 
 
 [sbe-create-admin]
@@ -162,6 +160,9 @@ environment =
   FLASK_REDIS_URI = ${redis-uri:uri}
   FLASK_BROKER_URL = ${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
+  FLASK_SITE_NAME = some name
+  FLASK_MAIL_SERVER = none
+  LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
 
 wrapper-path = ${directory:services}/sbe_create_admin
 
@@ -178,10 +179,8 @@ command-line =
   --log-level debug
   --timeout 10000
 
-# Here we DO NOT use the FLASK_SERVER_NAME variable.
-#FLASK_SERVER_NAME = ${request-sbe-frontend:connection-secure_access}
-#FLASK_SERVER_NAME = [${sbe-parameters:ipv6}]:${sbe-parameters:port}
 environment =
+  FLASK_APP = extranet.wsgi:app
   REDIS_SOCKET = ${service-redis:unixsocket}
   FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
@@ -191,7 +190,8 @@ environment =
   FLASK_BROKER_URL = ${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
   FLASK_SITE_NAME = some name
-  FLASK_MAIL_SERVER =
+  FLASK_MAIL_SERVER = none
+  LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
 
 wrapper-path = ${directory:services}/sbe_start_gunicorn
 
