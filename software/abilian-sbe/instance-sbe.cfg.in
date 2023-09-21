@@ -123,13 +123,13 @@ mail = jd@abilian.com
 passwd = azerty
 
 
-[sbe-initdb]
-recipe = slapos.cookbook:wrapper
-command-line =
-  sh -c "cd {{parameter_dict['sbe_path']}}/src && {{parameter_dict['flask']}} initdb"
-
-environment =
-  FLASK_APP = extranet.wsgi:app
+[sbe-env]
+recipe = plone.recipe.command
+filename = .env
+path = {{parameter_dict['sbe_path']}}/${:filename}
+command =
+  cat > ${:path} << EOF
+  FLASK_APP = wsgi.py
   REDIS_SOCKET = ${service-redis:unixsocket}
   FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
@@ -141,58 +141,32 @@ environment =
   FLASK_SITE_NAME = some name
   FLASK_MAIL_SERVER = none
   LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
+  EOF
+update-command = ${:command}
 
+
+[sbe-initdb]
+recipe = slapos.cookbook:wrapper
+command-line =
+  sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} initdb"
 wrapper-path = ${directory:services}/sbe_initdb
 
 
 [sbe-create-admin]
 recipe = slapos.cookbook:wrapper
 command-line =
-  sh -c "cd {{parameter_dict['sbe_path']}}/src && {{parameter_dict['flask']}} createuser --role admin --name admin ${sbe-admin:mail} ${sbe-admin:passwd}"
-
-environment =
-  FLASK_APP = extranet.wsgi:app
-  REDIS_SOCKET = ${service-redis:unixsocket}
-  FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
-  FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
-  FLASK_DEBUG = 1
-  FLASK_MAIL_DEBUG = 1
-  FLASK_REDIS_URI = ${redis-uri:uri}
-  FLASK_BROKER_URL = ${redis-uri:uri}
-  FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
-  FLASK_SITE_NAME = some name
-  FLASK_MAIL_SERVER = none
-  LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
-
+  sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} createuser --role admin --name admin ${sbe-admin:mail} ${sbe-admin:passwd}"
 wrapper-path = ${directory:services}/sbe_create_admin
+
+
+[gunicorn-cmd]
+command = {{parameter_dict['gunicorn']}} extranet.wsgi:app -b [${sbe-parameters:ipv6}]:${sbe-parameters:port} -p ${sbe-parameters:pid-file} --workers 1 --error-logfile ${sbe-parameters:log-file} --log-level debug --timeout 10000
 
 
 [sbe-start-gunicorn]
 recipe = slapos.cookbook:wrapper
 command-line =
-  {{parameter_dict['gunicorn']}}
-  extranet.wsgi:app
-  -b [${sbe-parameters:ipv6}]:${sbe-parameters:port}
-  -p ${sbe-parameters:pid-file}
-  --workers 1
-  --error-logfile ${sbe-parameters:log-file}
-  --log-level debug
-  --timeout 10000
-
-environment =
-  FLASK_APP = extranet.wsgi:app
-  REDIS_SOCKET = ${service-redis:unixsocket}
-  FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
-  FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
-  FLASK_DEBUG = 1
-  FLASK_MAIL_DEBUG = 1
-  FLASK_REDIS_URI = ${redis-uri:uri}
-  FLASK_BROKER_URL = ${redis-uri:uri}
-  FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
-  FLASK_SITE_NAME = some name
-  FLASK_MAIL_SERVER = none
-  LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
-
+  sh -c "cd {{parameter_dict['sbe_path']}} && ${gunicorn-cmd:command}"
 wrapper-path = ${directory:services}/sbe_start_gunicorn
 
 
@@ -223,6 +197,7 @@ parts =
   redis-promise
   logrotate-entry-redis
 
+  sbe-env
   sbe-initdb
   sbe-create-admin
   sbe-start-gunicorn
