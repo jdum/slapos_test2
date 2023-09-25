@@ -123,37 +123,32 @@ mail = jd@abilian.com
 passwd = azerty
 
 
-[sbe-env]
-recipe = plone.recipe.command
-filename = .env
-path = {{parameter_dict['sbe_path']}}/${:filename}
-command =
-  cat > ${:path} << EOF
-  FLASK_APP = wsgi.py
-  REDIS_SOCKET = ${service-redis:unixsocket}
-  FLASK_SECRET_KEY = "zzzsdqlfkjhqldsfjhoiertzoetryi"
-  FLASK_SQLALCHEMY_DATABASE_URI = ${postgres-uri:uri}
-  FLASK_DEBUG = 1
-  FLASK_MAIL_DEBUG = 1
-  FLASK_REDIS_URI = ${redis-uri:uri}
-  FLASK_BROKER_URL = ${redis-uri:uri}
-  FLASK_CELERY_RESULT_BACKEND = ${redis-uri:uri}
-  FLASK_SITE_NAME = some name
-  FLASK_MAIL_SERVER = none
-  LIBREOFFICEPATH = {{parameter_dict['libreoffice_bin']}}/program
-  EOF
-update-command = ${:command}
+[sbe-wrapper]
+recipe = slapos.cookbook:wrapper
+environment =
+  FLASK_APP=wsgi.py
+  REDIS_SOCKET=${service-redis:unixsocket}
+  FLASK_SECRET_KEY="zzzsdqlfkjhqldsfjhoiertzoetryi"
+  FLASK_SQLALCHEMY_DATABASE_URI=${postgres-uri:uri}
+  FLASK_DEBUG=1
+  FLASK_MAIL_DEBUG=1
+  FLASK_REDIS_URI=${redis-uri:uri}
+  FLASK_BROKER_URL=${redis-uri:uri}
+  FLASK_CELERY_RESULT_BACKEND=${redis-uri:uri}
+  FLASK_SITE_NAME=some name
+  FLASK_MAIL_SERVER=none
+  LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
 
 
 [sbe-initdb]
-recipe = slapos.cookbook:wrapper
+<= sbe-wrapper
 command-line =
   sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} initdb"
 wrapper-path = ${directory:services}/sbe_initdb
 
 
 [sbe-create-admin]
-recipe = slapos.cookbook:wrapper
+<= sbe-wrapper
 command-line =
   sh -c "cd {{parameter_dict['sbe_path']}} && {{parameter_dict['flask']}} createuser --role admin --name admin ${sbe-admin:mail} ${sbe-admin:passwd}"
 wrapper-path = ${directory:services}/sbe_create_admin
@@ -164,7 +159,7 @@ command = {{parameter_dict['gunicorn']}} extranet.wsgi:app -b [${sbe-parameters:
 
 
 [sbe-start-gunicorn]
-recipe = slapos.cookbook:wrapper
+<= sbe-wrapper
 command-line =
   sh -c "cd {{parameter_dict['sbe_path']}} && ${gunicorn-cmd:command}"
 wrapper-path = ${directory:services}/sbe_start_gunicorn
@@ -197,7 +192,6 @@ parts =
   redis-promise
   logrotate-entry-redis
 
-  sbe-env
   sbe-initdb
   sbe-create-admin
   sbe-start-gunicorn
