@@ -138,6 +138,7 @@ environment =
   FLASK_SITE_NAME=some name
   FLASK_MAIL_SERVER=none
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
+  FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice
 
 
 [sbe-initdb]
