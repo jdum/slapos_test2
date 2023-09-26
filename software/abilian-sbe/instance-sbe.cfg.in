@@ -111,9 +111,19 @@ name = sbe-frontend.py
 config-url = ${request-sbe-frontend:connection-secure_access}
 
 
+[dummy-mail]
+recipe = slapos.cookbook:wrapper
+host = ${sbe-parameters:ipv4}
+port = 2501
+command-line =
+  python3 -m smtpd -n -c DebuggingServer ${:host}:${:port}
+wrapper-path = ${directory:services}/dummy_mail
+
+
 [sbe-parameters]
 pid-file = ${directory:run}/gunicorn.pid
 ipv6 = {{ (ipv6 | list)[0] }}
+ipv4 = {{ (ipv4 | list)[0] }}
 port = 8005
 log-file = ${directory:log}/sbe.log
 
@@ -132,11 +142,12 @@ environment =
   FLASK_SQLALCHEMY_DATABASE_URI=${postgres-uri:uri}
   FLASK_DEBUG=1
   FLASK_MAIL_DEBUG=1
+  FLASK_MAIL_SENDER=sbe-server@abilian.com
   FLASK_REDIS_URI=${redis-uri:uri}
   FLASK_BROKER_URL=${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND=${redis-uri:uri}
   FLASK_SITE_NAME=some name
-  FLASK_MAIL_SERVER=none
+  FLASK_MAIL_SERVER=FLASK_SERVER_NAME=${dummy-mail:host}:${dummy-mail:port}
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
   FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice
 
@@ -192,6 +203,8 @@ parts =
   service-redis
   redis-promise
   logrotate-entry-redis
+
+  dummy-mail
 
   sbe-initdb
   sbe-create-admin
