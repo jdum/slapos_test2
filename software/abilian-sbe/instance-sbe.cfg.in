@@ -75,7 +75,9 @@ depend =
 
 
 [redis-uri]
-uri = unix://${service-redis:unixsocket}?db=0
+# uri = unix://${service-redis:unixsocket}?db=0
+uri = redis+socket://${service-redis:unixsocket}
+unix = unix://${service-redis:unixsocket}
 
 
 [redis-promise]
@@ -114,9 +116,9 @@ config-url = ${request-sbe-frontend:connection-secure_access}
 [dummy-mail]
 recipe = slapos.cookbook:wrapper
 host = ${sbe-parameters:ipv4}
-port = 2501
+port = 2503
 command-line =
-  python3 -m smtpd -n -c DebuggingServer ${:host}:${:port}
+  sh -c "python3 -u -m smtpd -n -c DebuggingServer ${:host}:${:port} >> ${directory:log}/mail_dump.log"
 wrapper-path = ${directory:services}/dummy_mail
 
 
@@ -143,13 +145,16 @@ environment =
   FLASK_DEBUG=1
   FLASK_MAIL_DEBUG=1
   FLASK_MAIL_SENDER=sbe-server@abilian.com
-  FLASK_REDIS_URI=${redis-uri:uri}
-  FLASK_BROKER_URL=${redis-uri:uri}
+  FLASK_REDIS_URI=${redis-uri:unix}
+  FLASK_CELERY_BROKER_URL=${redis-uri:uri}
   FLASK_CELERY_RESULT_BACKEND=${redis-uri:uri}
+  FLASK_REDIS_CACHE_URL=${redis-uri:uri}
   FLASK_SITE_NAME=some name
   FLASK_MAIL_SERVER=FLASK_SERVER_NAME=${dummy-mail:host}:${dummy-mail:port}
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
   FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice
+
+#FLASK_BROKER_URL=${redis-uri:uri}
 
 
 [sbe-initdb]
