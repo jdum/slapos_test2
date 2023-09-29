@@ -41,6 +41,7 @@ context =
 
 [dynamic-template-sbe-parameters]
 gunicorn = {{ gunicorn_location }}
+celery = {{ celery_location }}
 flask = {{ flask_location }}
 sbe_path = {{ sbe_path }}
 redis_bin = {{ redis_bin }}

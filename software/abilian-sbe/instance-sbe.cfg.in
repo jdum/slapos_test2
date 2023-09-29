@@ -53,7 +53,6 @@ recipe = slapos.cookbook:symbolic.link
 target-directory = ${directory:bin}
 link-binary = ${postgresql:bin}/postgres ${postgresql:bin}/psql
 
-# Redis
 
 [service-redis]
 recipe  = slapos.cookbook:redis.server
@@ -66,8 +65,10 @@ pid-file    = ${directory:run}/redis.pid
 use-passwd  = false
 unixsocket  = ${:server-dir}/redis.socket
 # port = 0 means "don't listen on TCP at all" - listen only on unix socket
-ipv6    = ::1
+#ipv6 = {{ (ipv6 | list)[0] }}
+ipv6 = ::1
 port    = 0
+port = 0
 server-bin = {{ parameter_dict['redis_bin'] }}
 cli-bin = {{ parameter_dict['redis_cli'] }}
 depend =
@@ -75,9 +76,13 @@ depend =
 
 
 [redis-uri]
-# uri = unix://${service-redis:unixsocket}?db=0
-uri = redis+socket://${service-redis:unixsocket}
+redis = redis+socket://${service-redis:unixsocket}
 unix = unix://${service-redis:unixsocket}
+socket = socket://${service-redis:unixsocket}
+
+#tcp = redis://${service-redis:ipv4}:${service-redis:port}/0
+#redisonly = redis://${service-redis:unixsocket}
+#ipv6 = redis://[${service-redis:ipv6}]:${service-redis:port}/0
 
 
 [redis-promise]
@@ -139,22 +144,27 @@ passwd = azerty
 recipe = slapos.cookbook:wrapper
 environment =
   FLASK_APP=wsgi.py
-  REDIS_SOCKET=${service-redis:unixsocket}
   FLASK_SECRET_KEY="zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI=${postgres-uri:uri}
   FLASK_DEBUG=1
   FLASK_MAIL_DEBUG=1
   FLASK_MAIL_SENDER=sbe-server@abilian.com
   FLASK_REDIS_URI=${redis-uri:unix}
-  FLASK_CELERY_BROKER_URL=${redis-uri:uri}
-  FLASK_CELERY_RESULT_BACKEND=${redis-uri:uri}
-  FLASK_REDIS_CACHE_URL=${redis-uri:uri}
+  REDIS_URI=${redis-uri:unix}
+  FLASK_CELERY_BROKER_URL=${redis-uri:redis}
+  CELERY_BROKER_URL=${redis-uri:redis}
+  FLASK_CELERY_RESULT_BACKEND=${redis-uri:redis}
+  CELERY_RESULT_BACKEND=${redis-uri:redis}
   FLASK_SITE_NAME=some name
   FLASK_MAIL_SERVER=FLASK_SERVER_NAME=${dummy-mail:host}:${dummy-mail:port}
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
   FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice
 
-#FLASK_BROKER_URL=${redis-uri:uri}
+# FLASK_BROKER_URL=${redis-uri:uri}
+# REDIS_SOCKET=${service-redis:unixsocket}
+# FLASK_REDIS_CACHE_URL=${redis-uri:unix}
+#  NO_PROCESS_DOCUMENT=1
+#  NO_INDEX_UPDATE=1
 
 
 [sbe-initdb]
@@ -171,8 +181,19 @@ command-line =
 wrapper-path = ${directory:services}/sbe_create_admin
 
 
+[celery-cmd]
+command = {{parameter_dict['celery']}} -A extranet.celery_app worker -l INFO 
+
+
+[start-celery]
+<= sbe-wrapper
+command-line =
+  sh -c "cd {{parameter_dict['sbe_path']}} && ${celery-cmd:command}"
+wrapper-path = ${directory:services}/sbe_start_celery
+
+
 [gunicorn-cmd]
-command = {{parameter_dict['gunicorn']}} extranet.wsgi:app -b [${sbe-parameters:ipv6}]:${sbe-parameters:port} -p ${sbe-parameters:pid-file} --workers 1 --error-logfile ${sbe-parameters:log-file} --log-level debug --timeout 10000
+command = {{parameter_dict['gunicorn']}} extranet.wsgi:app -b [${sbe-parameters:ipv6}]:${sbe-parameters:port} -p ${sbe-parameters:pid-file} --workers 2 --error-logfile ${sbe-parameters:log-file} --log-level debug --timeout 10000
 
 
 [sbe-start-gunicorn]
@@ -213,6 +234,7 @@ parts =
 
   sbe-initdb
   sbe-create-admin
+  start-celery
   sbe-start-gunicorn
   sbe-listen-promise
   sbe-frontend-promise
