@@ -100,7 +100,8 @@ log-file = ${directory:log}/sbe.log
 
 
 [sqlite3-path]
-data = {{ parameter_dict[['data_dir'] }}/db.sqlite3
+data = {{ parameter_dict['data_dir'] }}/db.sqlite3
+uri = sqlite:///${:data}
 
 
 [sbe-admin]
@@ -113,8 +114,8 @@ recipe = slapos.cookbook:wrapper
 environment =
   FLASK_APP=wsgi.py
   FLASK_SECRET_KEY="zzzsdqlfkjhqldsfjhoiertzoetryi"
-  FLASK_SQLALCHEMY_DATABASE_URI "sqlite:////app/data/db.sqlite3"
-  FLASK_SQLALCHEMY_TRACK_MODIFICATIONS False
+  FLASK_SQLALCHEMY_DATABASE_URI=${sqlite3-path:uri}
+  FLASK_SQLALCHEMY_TRACK_MODIFICATIONS=0
   FLASK_DEBUG=1
   FLASK_MAIL_DEBUG=1
   FLASK_MAIL_SENDER=sbe-server@abilian.com
