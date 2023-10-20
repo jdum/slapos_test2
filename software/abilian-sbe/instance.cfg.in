@@ -50,7 +50,6 @@ postgresql_location = {{ postgresql_location }}
 imagemagick = {{ imagemagick }}
 poppler = {{ poppler }}
 curl = {{ curl }}
-jdk = {{ jdk }}
 libreoffice_bin = {{ libreoffice_bin }}
 
 
