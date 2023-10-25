@@ -94,7 +94,7 @@ DatabaseDirectory {{ clamconf['db_dir'] }}
 #LocalSocket /run/clamav/clamd.sock
 #LocalSocket /tmp/clamd.sock
 
-LocalSocket {{ clamconf['socket_file'] }}
+LocalSocket {{ clamconf['socket'] }}
 
 # Sets the group ownership on the unix socket.
 # Default: disabled (the primary group of the user running clamd)
