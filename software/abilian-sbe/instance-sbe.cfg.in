@@ -136,7 +136,7 @@ environment =
 [clamd-server-promise]
 <= monitor-promise-base
 promise = check_socket_listening
-name = $${:_buildout_section_name_}.py
+name = clamd_server_promise.py
 config-pathname = ${clamconf:socket}
 
 
