@@ -107,7 +107,7 @@ rotate-num = 30
 [clamconf]
 tmp_dir = ${directory:clamd_tmp}
 db_dir = ${directory:clamd_db_dir}
-socket_file = ${directory:run}/clamd.ctl
+socket = ${directory:run}/clamd.ctl
 
 
 [clamd-config-file]
@@ -129,6 +129,13 @@ pid = ${directory:run}/clamd.pid
 command-line =
   ${:clamd} --foreground --config-file=${:config_file} --datadir=${:datadir} --pid=${:pid}
 wrapper-path = ${directory:services}/clamd_server
+
+
+[clamd-server-promise]
+<= monitor-promise-base
+promise = check_socket_listening
+name = $${:_buildout_section_name_}.py
+config-pathname = ${clamconf:socket}
 
 
 [request-sbe-frontend]
@@ -256,6 +263,7 @@ parts =
 
   clamd-config-file
   clamd-server
+  clamd-server-promise
 
   postgresql
   postgresql-binary-link
