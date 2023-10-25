@@ -16,6 +16,10 @@ tmp = ${:srv}/tmp
 redis     = ${:srv}/redis
 redis-log = ${:log}/redis
 redis-backup   = ${:backup}/sbe
+# clamav
+clamd_tmp = ${:tmp}
+clamd_db_dir = ${:srv}/clamd_db
+
 
 # Postgresql
 
@@ -100,6 +104,42 @@ frequency = daily
 rotate-num = 30
 
 
+[clamconf]
+tmp_dir = ${directory:clamd_tmp}
+db_dir = ${directory:clamd_db_dir}
+socket_file = ${directory:run}/clamd.ctl
+
+
+[clamd-config-file]
+recipe = slapos.recipe.template:jinja2
+url = {{ template_clamd_conf }}
+filename = clamd.conf
+output = ${directory:etc}/${:filename}
+
+context =
+  section clamconf clamconf
+  key slapparameter_dict slap-configuration:configuration
+
+
+[clamd-server]
+recipe = slapos.cookbook:wrapper
+clamd = {{ parameter_dict['clamd_bin'] }}
+config_file = ${clamd-config-file:output}
+datadir = ${directory:clamd_db_dir}
+pid = ${directory:run}/clamd.pid
+promise-wrapper = ${directory:bin}/clamd-promise
+command-line =
+  ${:clamd} --foreground --config-file=${:config_file} --datadir=${:datadir} --pid=${:pid}
+wrapper-path = ${directory:services}/clamd_server
+
+
+#[clamd-promise]
+#<= monitor-promise-base
+#promise = check_command_execute
+#name = clamd.py
+#config-command = ${clamd-server:promise-wrapper}
+
+
 [request-sbe-frontend]
 <= slap-connection
 recipe = slapos.cookbook:requestoptional
@@ -182,7 +222,7 @@ wrapper-path = ${directory:services}/sbe_create_admin
 
 
 [celery-cmd]
-command = {{parameter_dict['celery']}} -A extranet.celery_app worker -l INFO 
+command = {{parameter_dict['celery']}} -A extranet.celery_app worker -l INFO
 
 
 [start-celery]
