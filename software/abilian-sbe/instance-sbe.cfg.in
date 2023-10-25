@@ -127,7 +127,6 @@ clamd = {{ parameter_dict['clamd_bin'] }}
 config_file = ${clamd-config-file:output}
 datadir = ${directory:clamd_db_dir}
 pid = ${directory:run}/clamd.pid
-promise-wrapper = ${directory:bin}/clamd-promise
 command-line =
   ${:clamd} --foreground --config-file=${:config_file} --datadir=${:datadir} --pid=${:pid}
 wrapper-path = ${directory:services}/clamd_server
