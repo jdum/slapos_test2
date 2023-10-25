@@ -257,6 +257,8 @@ extends = {{ template_monitor }}
 parts =
   publish-connection-information
 
+  clamd-config-file
+
   postgresql
   postgresql-binary-link
 
