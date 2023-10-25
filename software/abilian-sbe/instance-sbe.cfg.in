@@ -115,7 +115,6 @@ recipe = slapos.recipe.template:jinja2
 url = {{ parameter_dict['template_clamd_conf'] }}
 filename = clamd.conf
 output = ${directory:etc}/${:filename}
-
 context =
   section clamconf clamconf
   key slapparameter_dict slap-configuration:configuration
@@ -130,8 +129,6 @@ pid = ${directory:run}/clamd.pid
 command-line =
   ${:clamd} --foreground --config-file=${:config_file} --datadir=${:datadir} --pid=${:pid}
 wrapper-path = ${directory:services}/clamd_server
-
-
 
 
 [request-sbe-frontend]
@@ -258,6 +255,7 @@ parts =
   publish-connection-information
 
   clamd-config-file
+  clamd-server
 
   postgresql
   postgresql-binary-link
