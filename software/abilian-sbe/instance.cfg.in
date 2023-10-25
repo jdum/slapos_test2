@@ -38,6 +38,7 @@ context =
   key computer_id slap-configuration:computer
   raw template_monitor {{ template_monitor_cfg }}
   raw logrotate_cfg {{ logrotate_cfg }}
+  raw openssl_location ${openssl:location}
   ${:extra-context}
 
 

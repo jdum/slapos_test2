@@ -129,6 +129,8 @@ pid = ${directory:run}/clamd.pid
 command-line =
   ${:clamd} --foreground --config-file=${:config_file} --datadir=${:datadir} --pid=${:pid}
 wrapper-path = ${directory:services}/clamd_server
+environment =
+  LD_LIBRARY_PATH={{ openssl_location }}/lib
 
 
 [clamd-server-promise]
