@@ -112,7 +112,7 @@ socket_file = ${directory:run}/clamd.ctl
 
 [clamd-config-file]
 recipe = slapos.recipe.template:jinja2
-url = {{ template_clamd_conf }}
+url = {{ parameter_dict['template_clamd_conf'] }}
 filename = clamd.conf
 output = ${directory:etc}/${:filename}
 
