@@ -133,11 +133,6 @@ command-line =
 wrapper-path = ${directory:services}/clamd_server
 
 
-#[clamd-promise]
-#<= monitor-promise-base
-#promise = check_command_execute
-#name = clamd.py
-#config-command = ${clamd-server:promise-wrapper}
 
 
 [request-sbe-frontend]
