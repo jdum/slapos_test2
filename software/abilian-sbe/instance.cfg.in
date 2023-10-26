@@ -55,6 +55,7 @@ poppler = {{ poppler }}
 curl = {{ curl }}
 libreoffice_bin = {{ libreoffice_bin }}
 template_clamd_conf = {{ template_clamd_conf }}
+template_freshclam_conf = {{ template_freshclam_conf }}
 clamd_bin = {{ clamd_bin }}
 freshclam_bin = {{ freshclam_bin }}
 
