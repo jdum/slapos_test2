@@ -120,6 +120,16 @@ context =
   key slapparameter_dict slap-configuration:configuration
 
 
+[clamd-database]
+recipe = slapos.recipe.template:jinja2
+url = {{ parameter_dict['template_clamd_conf'] }}
+filename = clamd.conf
+output = ${directory:etc}/${:filename}
+context =
+  section clamconf clamconf
+  key slapparameter_dict slap-configuration:configuration
+
+
 [clamd-server]
 recipe = slapos.cookbook:wrapper
 clamd = {{ parameter_dict['clamd_bin'] }}
@@ -138,6 +148,19 @@ environment =
 promise = check_socket_listening
 name = clamd_server_promise.py
 config-pathname = ${clamconf:socket}
+
+
+[freshclam-init]
+recipe = slapos.cookbook:wrapper
+freshclam = {{ parameter_dict['freshclam_bin'] }}
+# config_file = ${clamd-config-file:output}
+datadir = ${directory:clamd_db_dir}
+# pid = ${directory:run}/freshclam.pid
+command-line =
+  ${:freshclam} --stdout --datadir=${:datadir}
+wrapper-path = ${directory:services}/freshclam-init
+environment =
+  LD_LIBRARY_PATH={{ openssl_location }}/lib
 
 
 [request-sbe-frontend]
@@ -264,6 +287,7 @@ parts =
   publish-connection-information
 
   clamd-config-file
+  freshclam-init
   clamd-server
   clamd-server-promise
 
