@@ -120,10 +120,10 @@ context =
   key slapparameter_dict slap-configuration:configuration
 
 
-[clamd-database]
+[freshclam-config-file]
 recipe = slapos.recipe.template:jinja2
-url = {{ parameter_dict['template_clamd_conf'] }}
-filename = clamd.conf
+url = {{ parameter_dict['template_freshclam_conf'] }}
+filename = freshclam.conf
 output = ${directory:etc}/${:filename}
 context =
   section clamconf clamconf
@@ -153,7 +153,7 @@ config-pathname = ${clamconf:socket}
 [freshclam-init]
 recipe = slapos.cookbook:wrapper
 freshclam = {{ parameter_dict['freshclam_bin'] }}
-config_file = ${clamd-config-file:output}
+config_file = ${freshclam-config-file:output}
 datadir = ${directory:clamd_db_dir}
 # pid = ${directory:run}/freshclam.pid
 command-line =
@@ -287,6 +287,7 @@ parts =
   publish-connection-information
 
   clamd-config-file
+  freshclam-config-file
   freshclam-init
   clamd-server
   clamd-server-promise
