@@ -190,6 +190,25 @@ command-line =
 wrapper-path = ${directory:services}/dummy_mail
 
 
+[fontconfig-conf]
+recipe = slapos.recipe.template:jinja2
+url = {{ parameter_dict['template-fonts-conf'] }}
+output = ${directory:etc}/fonts.conf
+context =
+    key cachedir directory:fontconfig-cache
+    key fonts :fonts
+    key includes :includes
+fonts =
+{% for font in parameter_dict['fonts'].splitlines() %}
+    {{ font }}
+{% endfor%}
+    ${directory:font}
+includes =
+{% for include in parameter_dict['fontconfig-includes'].splitlines() %}
+   {{ include }}
+{% endfor%}
+
+
 [sbe-parameters]
 pid-file = ${directory:run}/gunicorn.pid
 ipv6 = {{ (ipv6 | list)[0] }}
@@ -223,12 +242,15 @@ environment =
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
   FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice
   CLAMD_CONF_PATH = ${clamd-config-file:output}
+  LD_LIBRARY_PATH = {{ parameter_dict['fontconfig'] }}/lib:parameter_dict['freetype'] }}/lib
+  FONTCONFIG_FILE = ${fontconfig-conf:output}
+  LANG = C.UTF-8
 
-# FLASK_BROKER_URL=${redis-uri:uri}
-# REDIS_SOCKET=${service-redis:unixsocket}
-# FLASK_REDIS_CACHE_URL=${redis-uri:unix}
-#  NO_PROCESS_DOCUMENT=1
-#  NO_INDEX_UPDATE=1
+
+
+  #LD_LIBRARY_PATH = {{ parameter_dict['avahi'] }}/lib:{{ parameter_dict['cairo'] }}/lib:{{ parameter_dict['cups'] }}/lib:{{ parameter_dict['cups'] }}/lib64:{{ parameter_dict['dbus'] }}/lib:{{ parameter_dict['dbus-glib'] }}/lib:{{ parameter_dict['file'] }}/lib:{{ parameter_dict['fontconfig'] }}/lib:{{ parameter_dict['freetype'] }}/lib:{{ parameter_dict['gcc'] }}/lib:{{ parameter_dict['gcc'] }}/lib64:{{ parameter_dict['glib'] }}/lib:{{ parameter_dict['glu'] }}/lib:{{ parameter_dict['libICE'] }}/lib:{{ parameter_dict['libSM'] }}/lib:{{ parameter_dict['libX11'] }}/lib:{{ parameter_dict['libXau'] }}/lib:{{ parameter_dict['libXdmcp'] }}/lib:{{ parameter_dict['libXext'] }}/lib:{{ parameter_dict['libXrender'] }}/lib:{{ parameter_dict['libexpat'] }}/lib:{{ parameter_dict['libffi'] }}/lib:{{ parameter_dict['libffi'] }}/lib64:{{ parameter_dict['libpng12'] }}/lib:{{ parameter_dict['libxcb'] }}/lib:{{ parameter_dict['mesa'] }}/lib:{{ parameter_dict['nss'] }}/lib:{{ parameter_dict['nspr'] }}/lib:{{ parameter_dict['pixman'] }}/lib:{{ parameter_dict['xdamage'] }}/lib:{{ parameter_dict['xfixes'] }}/lib:{{ parameter_dict['zlib'] }}/lib
+
+
 
 
 [sbe-initdb]
