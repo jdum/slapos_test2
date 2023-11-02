@@ -82,6 +82,7 @@ freetype = {{ freetype }}
 gcc = {{ gcc }}
 glib = {{ glib }}
 glu = {{ glu }}
+java = {{ java }}
 libICE = {{ libICE }}
 libSM = {{ libSM }}
 libX11 = {{ libX11 }}
