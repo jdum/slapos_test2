@@ -19,7 +19,9 @@ redis-backup   = ${:backup}/sbe
 # clamav
 clamd_tmp = ${:tmp}
 clamd_db_dir = ${:srv}/clamd_db
-
+# LO
+font = ${:srv}/font
+fontconfig-cache = ${buildout:directory}/.fontconfig
 
 # Postgresql
 
