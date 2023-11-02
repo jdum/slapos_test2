@@ -132,6 +132,15 @@ context =
   key slapparameter_dict slap-configuration:configuration
 
 
+[clamd-rm-socket]
+recipe = slapos.cookbook:wrapper
+pid = ${directory:run}/clamd.pid
+socket = ${clamconf:socket}
+command-line =
+  rm ${:socket} || true
+wrapper-path = ${directory:services}/clamd_rm_socket
+
+
 [clamd-server]
 recipe = slapos.cookbook:wrapper
 clamd = {{ parameter_dict['clamd_bin'] }}
@@ -309,6 +318,7 @@ parts =
   publish-connection-information
 
   clamd-config-file
+  clamd-rm-socket
   freshclam-config-file
   freshclam-init
   clamd-server
