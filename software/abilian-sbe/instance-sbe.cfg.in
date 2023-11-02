@@ -311,7 +311,6 @@ parts =
   publish-connection-information
 
   clamd-config-file
-  clamd-rm-socket
   freshclam-config-file
   freshclam-init
   clamd-server
