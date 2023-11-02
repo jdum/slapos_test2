@@ -89,6 +89,7 @@ libXau = {{ libXau }}
 libXdmcp = {{ libXdmcp }}
 libXext = {{ libXext }}
 libXrender = {{ libXrender }}
+libXinerama = {{ libXinerama }}
 libexpat = {{ libexpat }}
 libffi = {{ libffi }}
 libpng12 = {{ libpng12 }}
