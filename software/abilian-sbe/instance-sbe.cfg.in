@@ -132,8 +132,6 @@ context =
   key slapparameter_dict slap-configuration:configuration
 
 
-
-
 [clamd-server]
 recipe = slapos.cookbook:wrapper
 clamd = {{ parameter_dict['clamd_bin'] }}
