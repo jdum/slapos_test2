@@ -50,7 +50,6 @@ buildout_directory = {{ buildout_directory }}
 template_monitor_cfg = {{ template_monitor_cfg }}
 logrotate_cfg = {{ logrotate_cfg }}
 gunicorn = {{ gunicorn }}
-celery = {{ celery }}
 sbe_path = {{ sbe_path }}
 flask = {{ flask }}
 template_sbe = {{ template_sbe }}
