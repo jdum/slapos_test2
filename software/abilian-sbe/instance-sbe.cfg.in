@@ -16,9 +16,6 @@ tmp = ${:srv}/tmp
 redis     = ${:srv}/redis
 redis-log = ${:log}/redis
 redis-backup   = ${:backup}/sbe
-# clamav
-clamd_tmp = ${:tmp}
-clamd_db_dir = ${:srv}/clamd_db
 # LO
 font = ${:srv}/font
 fontconfig-cache = ${buildout:directory}/.fontconfig
@@ -106,65 +103,6 @@ frequency = daily
 rotate-num = 30
 
 
-[clamconf]
-tmp_dir = ${directory:clamd_tmp}
-db_dir = ${directory:clamd_db_dir}
-socket = ${directory:run}/clamd.ctl
-
-
-[clamd-config-file]
-recipe = slapos.recipe.template:jinja2
-url = {{ parameter_dict['template_clamd_conf'] }}
-filename = clamd.conf
-output = ${directory:etc}/${:filename}
-context =
-  section clamconf clamconf
-  key slapparameter_dict slap-configuration:configuration
-
-
-[freshclam-config-file]
-recipe = slapos.recipe.template:jinja2
-url = {{ parameter_dict['template_freshclam_conf'] }}
-filename = freshclam.conf
-output = ${directory:etc}/${:filename}
-context =
-  section clamconf clamconf
-  key slapparameter_dict slap-configuration:configuration
-
-
-[clamd-server]
-recipe = slapos.cookbook:wrapper
-clamd = {{ parameter_dict['clamd_bin'] }}
-config_file = ${clamd-config-file:output}
-datadir = ${directory:clamd_db_dir}
-pid = ${directory:run}/clamd.pid
-command-line =
-  ${:clamd} --foreground --config-file=${:config_file} --datadir=${:datadir} --pid=${:pid}
-wrapper-path = ${directory:services}/clamd_server
-environment =
-  LD_LIBRARY_PATH={{ openssl_location }}/lib
-
-
-[clamd-server-promise]
-<= monitor-promise-base
-promise = check_socket_listening
-name = clamd-server-promise.py
-config-pathname = ${clamconf:socket}
-
-
-[freshclam-init]
-recipe = slapos.cookbook:wrapper
-freshclam = {{ parameter_dict['freshclam_bin'] }}
-config_file = ${freshclam-config-file:output}
-datadir = ${directory:clamd_db_dir}
-# pid = ${directory:run}/freshclam.pid
-command-line =
-  ${:freshclam} --stdout --datadir=${:datadir} --config-file=${:config_file}
-wrapper-path = ${directory:services}/freshclam-init
-environment =
-  LD_LIBRARY_PATH={{ openssl_location }}/lib
-
-
 [request-sbe-frontend]
 <= slap-connection
 recipe = slapos.cookbook:requestoptional
@@ -243,7 +181,6 @@ environment =
   FLASK_MAIL_SERVER=FLASK_SERVER_NAME=${dummy-mail:host}:${dummy-mail:port}
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
   FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice.bin
-  CLAMD_CONF_PATH = ${clamd-config-file:output}
   FONTCONFIG_FILE = ${fontconfig-conf:output}
   LANG = C.UTF-8
   POPPLER_BIN = {{parameter_dict['poppler']}}/bin
@@ -314,12 +251,6 @@ backend-url = ${request-sbe-frontend:config-url}
 extends = {{ template_monitor }}
 parts =
   publish-connection-information
-
-  clamd-config-file
-  freshclam-config-file
-  freshclam-init
-  clamd-server
-  clamd-server-promise
 
   postgresql
   postgresql-binary-link
