@@ -48,7 +48,7 @@ port = ${postgresql-address:port}
 
 
 [postgres-uri]
-uri = postgres://${postgresql:superuser}:${postgresql:password}@${postgresql:ipv4}:${postgresql:port}/${postgresql:dbname}
+uri = postgresql://${postgresql:superuser}:${postgresql:password}@${postgresql:ipv4}:${postgresql:port}/${postgresql:dbname}
 
 
 [postgresql-binary-link]
