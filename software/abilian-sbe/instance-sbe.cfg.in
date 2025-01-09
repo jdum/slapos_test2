@@ -166,6 +166,7 @@ passwd = azerty
 recipe = slapos.cookbook:wrapper
 environment =
   FLASK_APP=wsgi.py
+  FLASK_SERVER_NAME = ${request-sbe-frontend:connection-domain}
   FLASK_SECRET_KEY="zzzsdqlfkjhqldsfjhoiertzoetryi"
   FLASK_SQLALCHEMY_DATABASE_URI=${postgres-uri:uri}
   FLASK_DEBUG=1
@@ -173,14 +174,14 @@ environment =
   FLASK_MAIL_SENDER=sbe-server@abilian.com
   FLASK_REDIS_URI=${redis-uri:unix}
   REDIS_URI=${redis-uri:unix}
-  FLASK_BROKER_URL="redis://localhost:6379/0"
+  FLASK_BROKER_URL=${redis-uri:unix}
   FLASK_DRAMATIQ_BROKER="dramatiq.brokers.redis:RedisBroker"
-  FLASK_DRAMATIQ_BROKER_URL=${redis-uri:redis}
-  FLASK_DRAMATIC_ABORT_REDIS_URL=${redis-uri:redis}
+  FLASK_DRAMATIQ_BROKER_URL=${redis-uri:unix}
+  FLASK_DRAMATIC_ABORT_REDIS_URL=${redis-uri:unix}
   FLASK_SCHEDULE_SEND_DAILY_SOCIAL_DIGEST="0 12 * * *"
   FLASK_PERIODIC_CLEAN_UPLOAD_DIRECTORY="5 * * * *"
   FLASK_SITE_NAME=some name
-  FLASK_MAIL_SERVER=FLASK_SERVER_NAME=${dummy-mail:host}:${dummy-mail:port}
+  FLASK_MAIL_SERVER=${dummy-mail:host}:${dummy-mail:port}
   LIBREOFFICEPATH={{parameter_dict['libreoffice_bin']}}/program
   FLASK_SOFFICE_LOCATION = {{parameter_dict['libreoffice_bin']}}/program/soffice.bin
   FONTCONFIG_FILE = ${fontconfig-conf:output}
@@ -213,7 +214,7 @@ wrapper-path = ${directory:services}/sbe_create_admin
 
 
 [gunicorn-cmd]
-command = {{parameter_dict['gunicorn']}} extranet.wsgi:app -b [${sbe-parameters:ipv6}]:${sbe-parameters:port} -p ${sbe-parameters:pid-file} --workers 2 --error-logfile ${sbe-parameters:log-file} --log-level debug --timeout 10000
+command = {{parameter_dict['gunicorn']}} wsgi:app -b [${sbe-parameters:ipv6}]:${sbe-parameters:port} -p ${sbe-parameters:pid-file} --workers 2 --error-logfile ${sbe-parameters:log-file} --log-level debug --timeout 10000
 
 
 [sbe-start-gunicorn]
